@@ -1,74 +1,30 @@
 # SPIFFS Assets Build Scripts
 
-这些脚本用于构建 SPIFFS assets 分区。
+These scripts are used to build SPIFFS assets partitions for ESP-IDF projects.
 
-## 使用方法
+## Usage
 
-### 环境变量配置
+### build_all.py - Batch Build Script
 
-脚本使用以下环境变量来配置基础路径：
-
-- `XIAOZHI_FONTS_PATH`: 字体文件的基础路径
-- `ESP_EMOTE_GFX_PATH`: 表情图形资源的基础路径
-- `ESP_BROOKESIA_BOARDS_PATH`: 开发板配置的基础路径
-
-### 选项 1: 使用默认路径
-
-直接运行脚本，使用默认路径：
+Build multiple SPIFFS assets partitions with different parameter combinations.
 
 ```bash
+# Build all default resolutions
 ./build_all.py
+
+# Build specific resolutions
+./build_all.py --resolution 360_360 320_240
+
+# Specify single output file
+./build_all.py --output /path/to/output.bin
+
+# Combine both options
+./build_all.py --resolution 360_360 --output /path/to/custom.bin
 ```
 
-### 选项 2: 临时设置环境变量
+### build.py - Single Build Script
 
-在命令行中临时设置环境变量：
-
-```bash
-XIAOZHI_FONTS_PATH=/custom/fonts/path \
-ESP_EMOTE_GFX_PATH=/custom/gfx/path \
-ESP_BROOKESIA_BOARDS_PATH=/custom/boards/path \
-./build_all.py
-```
-
-### 选项 3: 使用 .env 文件
-
-1. 复制示例配置文件：
-```bash
-cp .env.example .env
-```
-
-2. 编辑 `.env` 文件，修改路径
-
-3. 在运行前加载环境变量：
-```bash
-export $(cat .env | xargs)
-./build_all.py
-```
-
-或者使用 `source`:
-```bash
-source .env
-./build_all.py
-```
-
-## 脚本说明
-
-### build_all.py
-
-批量构建多个 SPIFFS assets 分区，使用不同的参数组合（字体和开发板）。
-
-#### 使用方法
-
-```bash
-./build_all.py
-```
-
-### build.py
-
-单独构建一个 SPIFFS assets 分区。
-
-#### 使用方法
+Build a single SPIFFS assets partition.
 
 ```bash
 ./build.py --text_font <text_font_file> \
@@ -76,10 +32,66 @@ source .env
            --res_path <res_path_dir>
 ```
 
-## 默认路径
+### build_boot.py - Boot Animation Script
 
-如果不设置环境变量，脚本将使用以下默认路径：
+Build boot animation assets independently.
 
-- 字体路径: `/home/xuxin/esp_work/esp-brookesia/products/speaker/managed_components/78__xiaozhi-fonts/cbin`
-- 资源路径: `/home/xuxin/esp_work/esp_emote_gfx`
-- 开发板路径: `/home/xuxin/esp_work/esp-brookesia/products/boards`
+```bash
+# Build boot animation with default output path
+./build_boot.py --src boot_animation_360_360.eaf
+
+# Build boot animation with custom output path
+./build_boot.py --src boot_animation_360_360.eaf --output ./final/boot_360_360.bin
+
+# Build boot animation for 320x240
+./build_boot.py --src boot_animation_320_240.eaf
+```
+
+## Configuration
+
+### Resolution Configuration
+
+Each resolution directory contains a `config.json` file:
+
+```json
+{
+    "text_font": "font_puhui_common_20_4",
+    "emoji_collection": "emoji_large"
+}
+```
+
+### Directory Structure
+
+```
+esp_emote_assets/
+├── 360_360/                 # 360x360 resolution config
+│   ├── config.json         # Resolution configuration
+│   └── layout.json         # Layout configuration
+├── 320_240/                 # 320x240 resolution config
+├── emoji_large/             # Large emoji resources
+├── emoji_small/             # Small emoji resources
+├── boot/                    # Boot animation files
+│   ├── boot_animation_360_360.eaf
+│   └── boot_animation_320_240.eaf
+└── scripts/
+    └── spiffs_assets/
+        ├── build.py        # Single build script
+        ├── build_all.py    # Batch build script
+        └── build_boot.py   # Boot animation script
+```
+
+## Path Configuration
+
+All paths are configured in the scripts, no environment variables needed.
+
+- **Fonts**: External dependency path
+- **Resources**: Local project paths using relative paths
+- **Configurations**: Local project paths using relative paths
+
+## Output Files
+
+Generated files follow these naming patterns:
+
+- **Resolution assets**: `{resolution}_{font}_{emoji}.bin`
+- **Boot animations**: Custom filename specified with `--output`
+- **Single file mode**: Custom filename specified with `--output`

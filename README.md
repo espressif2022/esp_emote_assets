@@ -1,39 +1,44 @@
 # ESP Emote Assets
 
-ESP Emote Assets 是一个用于管理 ESP-IDF 项目中表情和图形资源的组件。
+ESP Emote Assets is a component for managing emoji and graphics resources in ESP-IDF projects.
 
-## 功能特性
+## Features
 
-- 支持多种分辨率配置 (360_360, 320_240 等)
-- 支持多种字体配置
-- 支持多种表情集合 (emoji_large, emoji_small)
-- 自动生成 SPIFFS 资源分区
-- 提供构建脚本用于批量生成资源
+- Support for multiple resolution configurations (360_360, 320_240, etc.)
+- Support for multiple font configurations
+- Support for multiple emoji collections (emoji_large, emoji_small)
+- Automatic SPIFFS assets partition generation
+- Build scripts for batch resource generation
+- Independent boot animation support
 
-## 目录结构
+## Directory Structure
 
 ```
 esp_emote_assets/
-├── 360_360/                 # 360x360 分辨率配置
-│   ├── config.json         # 分辨率配置文件
-│   └── layout.json         # 布局配置文件
-├── 320_240/                 # 320x240 分辨率配置
+├── 360_360/                 # 360x360 resolution config
+│   ├── config.json         # Resolution configuration
+│   └── layout.json         # Layout configuration
+├── 320_240/                 # 320x240 resolution config
 │   ├── config.json
 │   └── layout.json
-├── emoji_large/             # 大尺寸表情资源
-├── emoji_small/             # 小尺寸表情资源
-├── scripts/                 # 构建脚本
+├── emoji_large/             # Large emoji resources
+├── emoji_small/             # Small emoji resources
+├── boot/                    # Boot animation files
+│   ├── boot_animation_360_360.eaf
+│   └── boot_animation_320_240.eaf
+├── scripts/                 # Build scripts
 │   └── spiffs_assets/
-│       ├── build.py        # 单个资源构建脚本
-│       └── build_all.py   # 批量构建脚本
-└── idf_component.yml       # ESP-IDF 组件配置
+│       ├── build.py        # Single resource build script
+│       ├── build_all.py    # Batch build script
+│       └── build_boot.py   # Boot animation script
+└── idf_component.yml       # ESP-IDF component configuration
 ```
 
-## 使用方法
+## Usage
 
-### 1. 作为 ESP-IDF 组件使用
+### 1. As ESP-IDF Component
 
-在你的项目 `idf_component.yml` 中添加依赖：
+Add dependency to your project's `idf_component.yml`:
 
 ```yaml
 dependencies:
@@ -41,20 +46,26 @@ dependencies:
     version: "1.0.0"
 ```
 
-### 2. 构建资源
+### 2. Build Resources
 
 ```bash
-# 构建所有配置的资源
+# Build all configured resources
 cd scripts/spiffs_assets
 ./build_all.py
 
-# 构建特定分辨率
+# Build specific resolution
 ./build.py --text_font <font_file> --resolution <resolution_dir> --res_path <emoji_dir>
+
+# Build boot animation
+./build_boot.py --src boot_animation_360_360.eaf
+
 ```
 
-## 配置说明
+## Configuration
 
-每个分辨率目录下的 `config.json` 文件格式：
+### Resolution Configuration
+
+Each resolution directory contains a `config.json` file:
 
 ```json
 {
@@ -63,6 +74,20 @@ cd scripts/spiffs_assets
 }
 ```
 
-## 路径配置
+### Boot Animation Files
 
-所有路径都配置在脚本中，无需设置环境变量。
+Boot animation files should be placed in the `boot/` directory with naming convention:
+- `boot_animation_360_360.eaf` - Boot animation for 360x360 resolution
+- `boot_animation_320_240.eaf` - Boot animation for 320x240 resolution
+
+## Path Configuration
+
+All paths are configured in the scripts, no environment variables needed.
+
+## Output Files
+
+Generated files follow these naming patterns:
+
+- **Resolution assets**: `{resolution}_{font}_{emoji}.bin`
+- **Boot animations**: `{src_filename}.bin` (default) or custom filename
+- **Single file mode**: Custom filename specified with `--output`

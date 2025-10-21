@@ -64,12 +64,4 @@ dependencies.lock
 # managed_components for examples
 managed_components
 
-mmap_generate_*.h
-
-# pytest log
-pytest_embedded_log/
-pytest_log/
-.pytest_cache/
-XUNIT_RESULT.xml
-
 .cache/
