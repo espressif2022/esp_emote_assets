@@ -63,8 +63,6 @@ cd scripts/spiffs_assets
 }
 ```
 
-## 环境变量
+## 路径配置
 
-- `FONTS_PATH`: 字体文件路径
-- `EMOTE_PATH`: 表情资源路径  
-- `BOARD_PATH`: 分辨率配置路径
+所有路径都配置在脚本中，无需设置环境变量。

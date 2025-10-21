@@ -9,18 +9,21 @@ This script calls build.py with different combinations of:
 And generates assets.bin files with names like:
 font_puhui_common_20_4-360_360.bin
 
-Environment Variables:
-- FONTS_PATH: Base path for font files (default: /home/xuxin/esp_work/esp-brookesia/products/speaker/managed_components/78__xiaozhi-fonts/cbin)
-- EMOTE_PATH: Base path for emote graphics (default: /home/xuxin/esp_work/esp_emote_gfx)
-- BOARD_PATH: Base path for resolution configurations (default: /home/xuxin/esp_work/esp_emote_assets)
-
 Usage:
-    # Use default paths and package mode
+    # Build all default resolutions
     ./build_all.py
     
+    # Build specific resolutions
+    ./build_all.py --resolution 360_360 320_240
     
-    # Override paths with environment variables
-    FONTS_PATH=/custom/fonts/path EMOTE_PATH=/custom/gfx/path ./build_all.py
+    # Specify single output file
+    ./build_all.py --output /path/to/output.bin
+    
+    # Combine both options
+    ./build_all.py --resolution 360_360 --output /path/to/custom.bin
+    
+    # Override fonts path with environment variable
+    FONTS_PATH=/custom/fonts/path ./build_all.py
 """
 
 import os
@@ -40,11 +43,14 @@ class Colors:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
 
-# Base paths - can be overridden by environment variables
-FONTS_BASE_PATH = os.getenv('FONTS_PATH', '/home/xuxin/esp_work/esp-brookesia/products/speaker/managed_components/78__xiaozhi-fonts/cbin')
-EMOTE_GFX_BASE_PATH = os.getenv('EMOTE_PATH', '/home/xuxin/esp_work/esp_emote_assets')
-BOARDS_BASE_PATH = os.getenv('BOARD_PATH', '/home/xuxin/esp_work/esp_emote_assets')
+# Get script directory for relative path calculation
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 
+# Base paths - all local paths
+FONTS_BASE_PATH = PROJECT_ROOT
+EMOTE_GFX_BASE_PATH = PROJECT_ROOT
+BOARDS_BASE_PATH = PROJECT_ROOT
 
 def ensure_dir(directory):
     """Ensure directory exists, create if not"""
@@ -58,14 +64,14 @@ def get_file_path(base_dir, filename):
     return os.path.join(base_dir, f"{filename}.bin" if not filename.startswith("emojis_") else filename)
 
 
-def build_assets(text_font, resolution_name, emoji_collection, build_dir, final_dir):
+def build_assets(text_font, resolution_name, emoji_collection, build_dir, final_dir, output_filename=None):
     """Build assets.bin using build.py with given parameters"""
     
     # Prepare arguments for build.py
     cmd = [sys.executable, "build.py"]
     
     if text_font != "none":
-        text_font_path = os.path.join(FONTS_BASE_PATH, f"{text_font}.bin")
+        text_font_path = os.path.join(FONTS_BASE_PATH, 'font/', f"{text_font}.bin")
         cmd.extend(["--text_font", text_font_path])
 
     print(f"resolution: {resolution_name}")
@@ -87,7 +93,10 @@ def build_assets(text_font, resolution_name, emoji_collection, build_dir, final_
         result = subprocess.run(cmd, check=True, cwd=os.path.dirname(__file__))
         
         # Generate output filename
-        output_name = f"{resolution_name}_{text_font}_{emoji_collection}.bin"
+        if output_filename:
+            output_name = output_filename
+        else:
+            output_name = f"{resolution_name}_{text_font}_{emoji_collection}.bin"
         
         # Copy generated assets.bin to final directory with new name
         src_path = os.path.join(build_dir, "assets.bin")
@@ -133,19 +142,15 @@ def load_resolution_config(resolution_name):
 def main():
     # Parse command line arguments
     parser = argparse.ArgumentParser(description='Build multiple SPIFFS assets partitions')
+    parser.add_argument('--resolution', nargs='+', help='List of resolution directories to build (e.g., 360_360 320_240)')
+    parser.add_argument('--output', help='Output file path for generated .bin file (default: build/final/{resolution}_{font}_{emoji}.bin)')
     args = parser.parse_args()
     
-    # Print base paths configuration
-    print("=" * 60)
-    print(f"  FONTS_BASE_PATH: {FONTS_BASE_PATH}")
-    print(f"  EMOTE_GFX_BASE_PATH: {EMOTE_GFX_BASE_PATH}")
-    print(f"  BOARDS_BASE_PATH: {BOARDS_BASE_PATH}")
-    print("=" * 60)
-    
-    # Configuration - resolutions are now just directory names
-    resolutions = [
+    # Use command line resolutions or default
+    resolutions = args.resolution if args.resolution else [
         "360_360",
         "320_240",
+        "1024_600",
     ]
     
     # Get script directory
@@ -153,11 +158,18 @@ def main():
     
     # Set directory paths
     build_dir = os.path.join(script_dir, "build")
-    final_dir = os.path.join(build_dir, "final")
     
-    # Ensure directories exist
-    ensure_dir(build_dir)
-    ensure_dir(final_dir)
+    if args.output:
+        # Single output file specified
+        final_dir = os.path.dirname(args.output)
+        output_filename = os.path.basename(args.output)
+        ensure_dir(final_dir)
+    else:
+        # Default: multiple files in build/final directory
+        final_dir = os.path.join(build_dir, "final")
+        output_filename = None
+        ensure_dir(build_dir)
+        ensure_dir(final_dir)
     
     print("Start building multiple SPIFFS assets partitions...")
     print(f"Output directory: {final_dir}")
@@ -179,22 +191,10 @@ def main():
         
         total_combinations += 1
         
-        if build_assets(text_font, resolution_name, emoji_collection, build_dir, final_dir):
+        if build_assets(text_font, resolution_name, emoji_collection, build_dir, final_dir, output_filename):
             successful_builds += 1
     
-    print(f"\n{Colors.GREEN}Build completed!{Colors.ENDC}")
-    print(f"{Colors.GREEN}Successful builds: {successful_builds}/{total_combinations}{Colors.ENDC}")
-    
-    # List generated files
-    if os.path.exists(final_dir):
-        files = [f for f in os.listdir(final_dir) if f.endswith('.bin')]
-        if files:
-            print(f"\n{Colors.GREEN}Generated files:{Colors.ENDC}")
-            for file in sorted(files):
-                file_size = os.path.getsize(os.path.join(final_dir, file))
-                print(f"  {Colors.BLUE}{file}{Colors.ENDC} ({file_size:,} bytes)")
-        else:
-            print(f"\n{Colors.YELLOW}No .bin files found{Colors.ENDC}")
+    print(f"{Colors.GREEN}Completed! Builds: {successful_builds}/{total_combinations}{Colors.ENDC}")
 
 
 if __name__ == "__main__":

@@ -51,14 +51,12 @@ cmake-build-*/
 flake8_output.txt
 
 # esp-idf default build directory name
-build/assets/
-build/output/
-build/include/
-build_esp*/
-build_linux*/
-size_info.txt
-sdkconfig
-sdkconfig.old
+assets
+output
+final
+include
+assets.bin
+config.json
 
 # lock files for examples and components
 dependencies.lock
