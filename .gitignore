@@ -56,7 +56,6 @@ output
 final
 include
 assets.bin
-config.json
 
 # lock files for examples and components
 dependencies.lock

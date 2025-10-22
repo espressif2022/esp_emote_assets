@@ -66,9 +66,7 @@ def build_boot_assets(boot_file, output_file):
     if not os.path.exists(boot_path):
         print(f"{Colors.RED}✗ Boot file not found: {boot_path}{Colors.ENDC}")
         return False
-    
-    print(f"{Colors.GREEN}Found boot file: {boot_path}{Colors.ENDC}")
-    
+
     # Get script directory for build path
     script_dir = os.path.dirname(os.path.abspath(__file__))
     build_dir = os.path.join(script_dir, "build")
@@ -84,7 +82,6 @@ def build_boot_assets(boot_file, output_file):
     boot_filename = os.path.basename(boot_path)
     boot_dst = os.path.join(assets_dir, boot_filename)
     shutil.copy2(boot_path, boot_dst)
-    print(f"Copied boot file: {boot_filename}")
     
     # Generate config.json for SPIFFS packaging
     config_data = {
@@ -109,7 +106,6 @@ def build_boot_assets(boot_file, output_file):
     with open(config_path, 'w', encoding='utf-8') as f:
         json.dump(config_data, f, indent=4, ensure_ascii=False)
     
-    print(f"Generated: {config_path}")
     
     # Use spiffs_assets_gen.py to package final build/assets.bin
     try:
