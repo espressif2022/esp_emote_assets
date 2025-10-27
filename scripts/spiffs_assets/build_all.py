@@ -99,7 +99,7 @@ def build_assets(text_font, resolution_name, emoji_collection, build_dir, final_
             output_name = f"{resolution_name}_{text_font}_{emoji_collection}.bin"
         
         # Copy generated assets.bin to final directory with new name
-        src_path = os.path.join(build_dir, "assets.bin")
+        src_path = os.path.join(build_dir, "output", "assets.bin")
         dst_path = os.path.join(final_dir, output_name)
         
         if os.path.exists(src_path):
@@ -157,7 +157,7 @@ def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     
     # Set directory paths
-    build_dir = os.path.join(script_dir, "build")
+    build_dir = os.path.join(script_dir, "build/face")
     
     if args.output:
         # Single output file specified

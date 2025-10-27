@@ -51,11 +51,7 @@ cmake-build-*/
 flake8_output.txt
 
 # esp-idf default build directory name
-assets
-output
-final
-include
-assets.bin
+build/
 
 # lock files for examples and components
 dependencies.lock

@@ -4,33 +4,44 @@ ESP Emote Assets is a component for managing emoji and graphics resources in ESP
 
 ## Features
 
-- Support for multiple resolution configurations (360_360, 320_240, etc.)
-- Support for multiple font configurations
+- Support for multiple resolution configurations (1024_600, 360_360, 320_240)
+- Support for multiple font configurations (14pt, 16pt, 20pt, 30pt)
 - Support for multiple emoji collections (emoji_large, emoji_small)
 - Automatic SPIFFS assets partition generation
 - Build scripts for batch resource generation
 - Independent boot animation support
+- CMake integration for ESP-IDF projects
 
 ## Directory Structure
 
 ```
 esp_emote_assets/
-├── 360_360/                 # 360x360 resolution config
+├── 1024_600/               # 1024x600 resolution config
 │   ├── config.json         # Resolution configuration
 │   └── layout.json         # Layout configuration
-├── 320_240/                 # 320x240 resolution config
+├── 320_240/                # 320x240 resolution config
 │   ├── config.json
 │   └── layout.json
-├── emoji_large/             # Large emoji resources
-├── emoji_small/             # Small emoji resources
-├── boot/                    # Boot animation files
-│   ├── boot_animation_360_360.eaf
-│   └── boot_animation_320_240.eaf
-├── scripts/                 # Build scripts
+├── 360_360/                # 360x360 resolution config
+│   ├── config.json
+│   └── layout.json
+├── emoji_large/            # Large emoji resources
+├── emoji_small/            # Small emoji resources
+├── font/                   # Font files
+│   ├── font_puhui_common_14_1.bin # From 78/xiaozhi-fonts
+│   ├── font_puhui_common_16_4.bin
+│   ├── font_puhui_common_20_4.bin
+│   └── font_puhui_common_30_4.bin
+├── boot/                   # Boot animation files
+│   └── anim_360_360.eaf
+├── scripts/                # Build scripts
 │   └── spiffs_assets/
 │       ├── build.py        # Single resource build script
 │       ├── build_all.py    # Batch build script
-│       └── build_boot.py   # Boot animation script
+│       ├── build_boot.py   # Boot animation script
+│       ├── spiffs_assets_gen.py  # SPIFFS assets generator
+│       └── README.md       # Build scripts documentation
+├── CMakeLists.txt          # CMake configuration
 └── idf_component.yml       # ESP-IDF component configuration
 ```
 
@@ -57,7 +68,7 @@ cd scripts/spiffs_assets
 ./build.py --text_font <font_file> --resolution <resolution_dir> --res_path <emoji_dir>
 
 # Build boot animation
-./build_boot.py --src boot_animation_360_360.eaf
+./build_boot.py --src anim_360_360.eaf
 
 ```
 
@@ -76,9 +87,10 @@ Each resolution directory contains a `config.json` file:
 
 ### Boot Animation Files
 
-Boot animation files should be placed in the `boot/` directory with naming convention:
-- `boot_animation_360_360.eaf` - Boot animation for 360x360 resolution
-- `boot_animation_320_240.eaf` - Boot animation for 320x240 resolution
+Boot animation files should be placed in the `boot/` directory. Current files:
+- `anim_360_360.eaf` - Boot animation for 360x360 resolution
+
+The build script supports automatic file discovery with extensions: `.eaf`.
 
 ## Path Configuration
 

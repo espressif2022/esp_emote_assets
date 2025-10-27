@@ -69,9 +69,9 @@ def build_boot_assets(boot_file, output_file):
 
     # Get script directory for build path
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    build_dir = os.path.join(script_dir, "build")
+    build_dir = os.path.join(script_dir, "build/boot")
     assets_dir = os.path.join(build_dir, "assets")
-    
+
     # Clean and create directories
     if os.path.exists(assets_dir):
         shutil.rmtree(assets_dir)
@@ -85,12 +85,12 @@ def build_boot_assets(boot_file, output_file):
     
     # Generate config.json for SPIFFS packaging
     config_data = {
-        "include_path": os.path.join(script_dir, "build/include"),
-        "assets_path": os.path.join(script_dir, "build/assets"),
-        "image_file": os.path.join(script_dir, "build/output/assets.bin"),
+        "include_path": os.path.join(build_dir, "include"),
+        "assets_path": os.path.join(build_dir, "assets"),
+        "image_file": os.path.join(build_dir, "output/assets.bin"),
         "lvgl_ver": "9.3.0",
         "assets_size": "0x400000",
-        "support_format": ".png, .gif, .jpg, .bin, .json, .eaf",
+        "support_format": ".eaf",
         "name_length": "32",
         "split_height": "0",
         "support_qoi": False,
@@ -159,7 +159,7 @@ def main():
     
     # Build boot assets
     if build_boot_assets(args.src, args.output):
-        print(f"{Colors.GREEN}Build completed successfully!{Colors.ENDC}")
+        print(f"{Colors.GREEN}Completed!{Colors.ENDC}")
     else:
         print(f"{Colors.RED}Build failed!{Colors.ENDC}")
         sys.exit(1)

@@ -232,13 +232,11 @@ def generate_index_json(assets_dir, text_font, emoji_collection, icon_collection
 
 def generate_config_json(build_dir, assets_dir):
     """Generate config.json file"""
-    # Get absolute path of current working directory
-    workspace_dir = os.path.abspath(os.path.join(os.path.dirname(__file__)))
     
     config_data = {
-        "include_path": os.path.join(workspace_dir, "build/include"),
-        "assets_path": os.path.join(workspace_dir, "build/assets"),
-        "image_file": os.path.join(workspace_dir, "build/output/assets.bin"),
+        "include_path": os.path.join(build_dir, "include"),
+        "assets_path": os.path.join(build_dir, "assets"),
+        "image_file": os.path.join(build_dir, "output/assets.bin"),
         "lvgl_ver": "9.3.0",
         "assets_size": "0x400000",
         "support_format": ".png, .gif, .jpg, .bin, .json, .eaf",
@@ -274,7 +272,7 @@ def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     
     # Set directory paths
-    build_dir = os.path.join(script_dir, "build")
+    build_dir = os.path.join(script_dir, "build/face")
     assets_dir = os.path.join(build_dir, "assets")
     if os.path.exists(assets_dir):
         shutil.rmtree(assets_dir)
@@ -313,7 +311,7 @@ def main():
         sys.exit(1)
     
     # Copy build/output/assets.bin to build/assets.bin
-    shutil.copy(os.path.join(build_dir, "output", "assets.bin"), os.path.join(build_dir, "assets.bin"))
+    # shutil.copy(os.path.join(build_dir, "output", "assets.bin"), os.path.join(build_dir, "assets.bin"))
     print("Build completed!")
 
 

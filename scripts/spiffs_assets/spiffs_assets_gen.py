@@ -562,18 +562,18 @@ def process_assets_build(config_data):
 
     print('--support_format:', support_format)
 
-    if '.jpg' in support_format or '.png' in support_format:
-        print('--support_spng:', copy_config.spng_enable)
-        print('--support_sjpg:', copy_config.sjpg_enable)
-        print('--support_qoi:', copy_config.qoi_enable)
-        print('--support_raw:', copy_config.row_enable)
+    # if '.jpg' in support_format or '.png' in support_format:
+    #     print('--support_spng:', copy_config.spng_enable)
+    #     print('--support_sjpg:', copy_config.sjpg_enable)
+    #     print('--support_qoi:', copy_config.qoi_enable)
+    #     print('--support_raw:', copy_config.row_enable)
 
-        if copy_config.sqoi_enable:
-            print('--support_sqoi:', copy_config.sqoi_enable)
-        if copy_config.spng_enable or copy_config.sjpg_enable or copy_config.sqoi_enable:
-            print('--split_height:', copy_config.split_height)
-        if copy_config.row_enable:
-            print('--lvgl_version:', config_data['lvgl_ver'])
+    #     if copy_config.sqoi_enable:
+    #         print('--support_sqoi:', copy_config.sqoi_enable)
+    #     if copy_config.spng_enable or copy_config.sjpg_enable or copy_config.sqoi_enable:
+    #         print('--split_height:', copy_config.split_height)
+    #     if copy_config.row_enable:
+    #         print('--lvgl_version:', config_data['lvgl_ver'])
 
     if not os.path.exists(target_path):
         os.makedirs(target_path, exist_ok=True)
