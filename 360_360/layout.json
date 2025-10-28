@@ -2,7 +2,7 @@
   {
     "type": "anim",
     "name": "eye_anim",
-    "align": "GFX_ALIGN_CENTER",
+    "align": "GFX_ALIGN_LEFT_MID",
     "x": 10,
     "y": 10,
     "anim": {
