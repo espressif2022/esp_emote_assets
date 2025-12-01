@@ -23,21 +23,21 @@
     "type": "image",
     "name": "status_icon",
     "align": "GFX_ALIGN_TOP_MID",
-    "x": -120,
+    "x": -145,
     "y": 18
   },
   {
     "type": "image",
     "name": "charge_icon",
     "align": "GFX_ALIGN_TOP_MID",
-    "x": -92,
+    "x": -117,
     "y": 28
   },
   {
     "type": "label",
     "name": "battery_label",
     "align": "GFX_ALIGN_TOP_MID",
-    "x": -122,
+    "x": -147,
     "y": 31,
     "width": 30,
     "height": 20,
@@ -55,17 +55,17 @@
     "type": "label",
     "name": "toast_label",
     "align": "GFX_ALIGN_TOP_MID",
-    "x": 0,
+    "x": 25,
     "y": 20,
-    "width": 200,
+    "width": 280,
     "height": 40,
     "label": {
       "color": 16777215,
       "text_align": "GFX_TEXT_ALIGN_CENTER",
       "long_mode": {
-        "type": "GFX_LABEL_LONG_SCROLL",
+        "type": "GFX_LABEL_LONG_SNAP",
         "loop": true,
-        "speed": 10
+        "snap_interval": 1500
       }
     }
   },
@@ -101,6 +101,16 @@
     "timer": {
       "period": 1000,
       "repeat_count": -1
+    }
+  },
+  {
+    "type": "qrcode",
+    "name": "qrcode",
+    "align": "GFX_ALIGN_CENTER",
+    "x": 0,
+    "y": 30,
+    "qrcode": {
+      "size": 150
     }
   }
 ]

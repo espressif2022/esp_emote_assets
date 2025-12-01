@@ -57,7 +57,7 @@ def find_boot_file(boot_name):
     # If not found, return the path with .eaf extension for error reporting
     return os.path.join(boot_dir, f"{boot_name}.eaf")
 
-def build_boot_assets(boot_file, output_file):
+def build_boot_assets(boot_file, output_file, name_length="32"):
     """Build boot assets independently - just copy and package"""
     
     # Find the actual boot file
@@ -85,21 +85,10 @@ def build_boot_assets(boot_file, output_file):
     
     # Generate config.json for SPIFFS packaging
     config_data = {
-        "include_path": os.path.join(build_dir, "include"),
         "assets_path": os.path.join(build_dir, "assets"),
         "image_file": os.path.join(build_dir, "output/assets.bin"),
-        "lvgl_ver": "9.3.0",
-        "assets_size": "0x400000",
         "support_format": ".eaf",
-        "name_length": "32",
-        "split_height": "0",
-        "support_qoi": False,
-        "support_spng": False,
-        "support_sjpg": False,
-        "support_sqoi": False,
-        "support_raw": False,
-        "support_raw_dither": False,
-        "support_raw_bgr": False
+        "name_length": name_length,
     }
     
     config_path = os.path.join(build_dir, "config.json")
@@ -113,7 +102,6 @@ def build_boot_assets(boot_file, output_file):
             sys.executable, "spiffs_assets_gen.py", 
             "--config", config_path
         ], check=True, cwd=script_dir)
-        print("Successfully packaged assets.bin")
     except subprocess.CalledProcessError as e:
         print(f"Error: Failed to package assets.bin: {e}")
         return False
@@ -139,6 +127,7 @@ def main():
     parser = argparse.ArgumentParser(description='Build boot animation assets')
     parser.add_argument('--src', required=True, help='Boot animation file name (e.g., boot_animation_360_360.eaf)')
     parser.add_argument('--output', help='Output file path for generated .bin file (default: build/final/{src_filename}.bin)')
+    parser.add_argument('--name_length', default="32", help='Name length for assets (default: 32)')
     args = parser.parse_args()
     
     # Set default output path if not provided
@@ -152,13 +141,14 @@ def main():
         src_name = os.path.splitext(args.src)[0]  # Remove extension
         args.output = os.path.join(final_dir, f"{src_name}.bin")
     
-    print(f"{Colors.BLUE}Boot Assets Builder{Colors.ENDC}")
-    print(f"Source file: {args.src}")
-    print(f"Output: {args.output}")
-    print("=" * 60)
+    # Print parsed arguments
+    print(f"{Colors.GREEN}Build Configuration:{Colors.ENDC}")
+    print(f"  Source: {args.src}")
+    print(f"  Output: {args.output}")
+    print(f"  Name Length: {args.name_length}")
     
     # Build boot assets
-    if build_boot_assets(args.src, args.output):
+    if build_boot_assets(args.src, args.output, args.name_length):
         print(f"{Colors.GREEN}Completed!{Colors.ENDC}")
     else:
         print(f"{Colors.RED}Build failed!{Colors.ENDC}")

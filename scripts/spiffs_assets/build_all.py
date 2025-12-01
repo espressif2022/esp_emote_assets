@@ -64,7 +64,7 @@ def get_file_path(base_dir, filename):
     return os.path.join(base_dir, f"{filename}.bin" if not filename.startswith("emojis_") else filename)
 
 
-def build_assets(text_font, resolution_name, emoji_collection, build_dir, final_dir, output_filename=None):
+def build_assets(text_font, resolution_name, emoji_collection, build_dir, final_dir, output_filename=None, name_length=None):
     """Build assets.bin using build.py with given parameters"""
     
     # Prepare arguments for build.py
@@ -74,18 +74,21 @@ def build_assets(text_font, resolution_name, emoji_collection, build_dir, final_
         text_font_path = os.path.join(FONTS_BASE_PATH, 'font/', f"{text_font}.bin")
         cmd.extend(["--text_font", text_font_path])
 
-    print(f"resolution: {resolution_name}")
+    # print(f"resolution: {resolution_name}")
     
     res_path = os.path.join(EMOTE_GFX_BASE_PATH, emoji_collection)
-    print(f"res_path: {res_path}")
+    # print(f"res_path: {res_path}")
     cmd.extend(["--res_path", res_path])
 
     resolution_path = os.path.join(BOARDS_BASE_PATH, resolution_name)
     cmd.extend(["--resolution", resolution_path])
     
+    if name_length:
+        cmd.extend(["--name_length", name_length])
+    
     # Prepare display info
     display_info = f"{resolution_name}_{text_font}_{emoji_collection}"
-    print(f"\n{Colors.GREEN}Building: {display_info}{Colors.ENDC}")
+    print(f"{Colors.GREEN}Building: {display_info}{Colors.ENDC}")
     # print(f"Command: {' '.join(cmd)}")
     
     try:
@@ -104,7 +107,8 @@ def build_assets(text_font, resolution_name, emoji_collection, build_dir, final_
         
         if os.path.exists(src_path):
             shutil.copy2(src_path, dst_path)
-            print(f"{Colors.GREEN}✓ Generated: {output_name}{Colors.ENDC}")
+            abs_dst_path = os.path.abspath(dst_path)
+            print(f"{Colors.GREEN}✓ Generated: {abs_dst_path}{Colors.ENDC}")
             return True
         else:
             print(f"{Colors.RED}✗ Error: generated assets.bin not found{Colors.ENDC}")
@@ -144,7 +148,14 @@ def main():
     parser = argparse.ArgumentParser(description='Build multiple SPIFFS assets partitions')
     parser.add_argument('--resolution', nargs='+', help='List of resolution directories to build (e.g., 360_360 320_240)')
     parser.add_argument('--output', help='Output file path for generated .bin file (default: build/final/{resolution}_{font}_{emoji}.bin)')
+    parser.add_argument('--name_length', help='Name length for assets (optional, default: "32")')
     args = parser.parse_args()
+    
+    # Print parsed arguments
+    print(f"{Colors.GREEN}Build Configuration:{Colors.ENDC}")
+    print(f"  Resolution: {args.resolution if args.resolution else 'default (360_360, 320_240, 1024_600)'}")
+    print(f"  Output: {args.output if args.output else 'default (build/final/{{resolution}}_{{font}}_{{emoji}}.bin)'}")
+    print(f"  Name Length: {args.name_length if args.name_length else '32'}")
     
     # Use command line resolutions or default
     resolutions = args.resolution if args.resolution else [
@@ -166,13 +177,10 @@ def main():
         ensure_dir(final_dir)
     else:
         # Default: multiple files in build/final directory
-        final_dir = os.path.join(build_dir, "final")
+        final_dir = os.path.join(script_dir, "build", "final")
         output_filename = None
         ensure_dir(build_dir)
         ensure_dir(final_dir)
-    
-    print("Start building multiple SPIFFS assets partitions...")
-    print(f"Output directory: {final_dir}")
     
     # Track successful builds
     successful_builds = 0
@@ -191,7 +199,7 @@ def main():
         
         total_combinations += 1
         
-        if build_assets(text_font, resolution_name, emoji_collection, build_dir, final_dir, output_filename):
+        if build_assets(text_font, resolution_name, emoji_collection, build_dir, final_dir, output_filename, args.name_length):
             successful_builds += 1
     
     print(f"{Colors.GREEN}Completed! Builds: {successful_builds}/{total_combinations}{Colors.ENDC}")

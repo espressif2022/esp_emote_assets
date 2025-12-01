@@ -55,13 +55,19 @@ function(validate_partition_size partition_name output_file)
 endfunction()
 
 # Function to build default assets based on configuration
+# Usage: build_speaker_assets_bin(partition_name resolution output_path [name_length])
 function(build_speaker_assets_bin partition_name resolution output_path)
     get_component_path("esp_emote_assets" component_path)
     
+    # Check if name_length is provided (4th argument)
     set(BUILD_ARGS
         "--resolution" "${resolution}"
         "--output" "${output_path}"
     )
+    
+    if(ARGC GREATER 3)
+        list(APPEND BUILD_ARGS "--name_length" "${ARGV3}")
+    endif()
 
     # Create custom command to build assets
     add_custom_command(
@@ -99,6 +105,7 @@ function(build_speaker_assets_bin partition_name resolution output_path)
 endfunction()
 
 # Function to build boot assets
+# Usage: build_boot_assets_bin(partition_name boot_src output_path [name_length])
 function(build_boot_assets_bin partition_name boot_src output_path)
     get_component_path("esp_emote_assets" component_path)
 
@@ -106,6 +113,11 @@ function(build_boot_assets_bin partition_name boot_src output_path)
         "--src" "${boot_src}"
         "--output" "${output_path}"
     )
+    
+    # Check if name_length is provided (4th argument)
+    if(ARGC GREATER 3 AND NOT "${ARGV3}" STREQUAL "")
+        list(APPEND BUILD_ARGS "--name_length" "${ARGV3}")
+    endif()
 
     # Create custom command to build assets
     add_custom_command(
