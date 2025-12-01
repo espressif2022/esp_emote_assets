@@ -102,7 +102,6 @@ def build_boot_assets(boot_file, output_file, name_length="32"):
             sys.executable, "spiffs_assets_gen.py", 
             "--config", config_path
         ], check=True, cwd=script_dir)
-        print("Successfully packaged assets.bin")
     except subprocess.CalledProcessError as e:
         print(f"Error: Failed to package assets.bin: {e}")
         return False
@@ -142,10 +141,11 @@ def main():
         src_name = os.path.splitext(args.src)[0]  # Remove extension
         args.output = os.path.join(final_dir, f"{src_name}.bin")
     
-    print(f"{Colors.BLUE}Boot Assets Builder{Colors.ENDC}")
-    print(f"Source file: {args.src}")
-    print(f"Output: {args.output}")
-    print("=" * 60)
+    # Print parsed arguments
+    print(f"{Colors.GREEN}Build Configuration:{Colors.ENDC}")
+    print(f"  Source: {args.src}")
+    print(f"  Output: {args.output}")
+    print(f"  Name Length: {args.name_length}")
     
     # Build boot assets
     if build_boot_assets(args.src, args.output, args.name_length):

@@ -115,7 +115,7 @@ def pack_assets(config: PackModelsConfig) -> None:
     with open(out_file, "wb") as output_bin:
         output_bin.write(final_data)
 
-    print(f"All bin files have been merged into {os.path.basename(out_file)}")
+    # print(f"All bin files have been merged into {os.path.basename(out_file)}")
 
 
 def copy_assets(config: AssetCopyConfig) -> None:

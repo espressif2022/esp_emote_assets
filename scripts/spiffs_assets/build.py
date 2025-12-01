@@ -90,7 +90,7 @@ def process_board_emoji_collection(emoji_collection_dir, resolution_dir, assets_
         return []
     
     emoji_config = load_emoji_config(resolution_dir)
-    print(f"Loaded emoji config with {len(emoji_config)} entries")
+    print(f"Loaded emoji config: {len(emoji_config)} entries")
     
     emoji_list = []
     
@@ -135,7 +135,7 @@ def process_board_emoji_collection(emoji_collection_dir, resolution_dir, assets_
         
         emoji_list.append(emoji_entry)
     
-    print(f"Successfully processed {len(emoji_list)} emotes from config")
+    print(f"Processed emotes: {len(emoji_list)} items")
     return emoji_list
 
 def process_board_icon_collection(icon_collection_dir, assets_dir):
@@ -166,8 +166,8 @@ def process_board_layout(layout_json_file, assets_dir):
         print(f"Warning: Layout json file not provided")
         return []
     
-    print(f"Processing layout_json: {layout_json_file}")
-    print(f"assets_dir: {assets_dir}")
+    #print(f"Processing layout_json: {layout_json_file}")
+    #print(f"assets_dir: {assets_dir}")
     
     if os.path.isdir(layout_json_file):
         layout_json_path = os.path.join(layout_json_file, "layout.json")
@@ -184,7 +184,8 @@ def process_board_layout(layout_json_file, assets_dir):
             layout_data = json.load(f)  # This validates JSON format
         
         # Return the original JSON data without processing
-        print(f"Loaded valid JSON with {len(layout_data) if isinstance(layout_data, list) else 'N/A'} elements")
+        count = len(layout_data) if isinstance(layout_data, list) else 'N/A'
+        print(f"Loaded JSON: {count} elements")
         return layout_data
         
     except Exception as e:
@@ -231,7 +232,7 @@ def generate_index_json(assets_dir, text_font, emoji_collection, icon_collection
     with open(index_path, 'w', encoding='utf-8') as f:
         json.dump(index_data, f, indent=4, ensure_ascii=False)
     
-    print(f"Generated: {index_path}")
+    #print(f"Generated: {index_path}")
 
 
 def generate_config_json(build_dir, assets_dir, name_length="32"):
@@ -249,7 +250,7 @@ def generate_config_json(build_dir, assets_dir, name_length="32"):
     with open(config_path, 'w', encoding='utf-8') as f:
         json.dump(config_data, f, indent=4, ensure_ascii=False)
     
-    print(f"Generated: {config_path}")
+    #print(f"Generated: {config_path}")
     return config_path
 
 
@@ -277,8 +278,6 @@ def main():
     ensure_dir(build_dir)
     ensure_dir(assets_dir)
     
-    print("Starting to build SPIFFS assets partition...")
-    
     # Process each parameter
     text_font = process_text_font(args.text_font, assets_dir)
 
@@ -301,15 +300,12 @@ def main():
             sys.executable, "spiffs_assets_gen.py", 
             "--config", config_path
         ], check=True, cwd=script_dir)
-        print("Successfully packaged assets.bin")
     except subprocess.CalledProcessError as e:
         print(f"Error: Failed to package assets.bin: {e}")
         sys.exit(1)
     
     # Copy build/output/assets.bin to build/assets.bin
     # shutil.copy(os.path.join(build_dir, "output", "assets.bin"), os.path.join(build_dir, "assets.bin"))
-    print("Build completed!")
-
 
 if __name__ == "__main__":
     main()
