@@ -10,16 +10,16 @@ Build multiple SPIFFS assets partitions with different parameter combinations.
 
 ```bash
 # Build all default resolutions
-./build_all.py
+python build_all.py
 
 # Build specific resolutions
-./build_all.py --resolution 360_360 320_240
+python build_all.py --resolution 360_360 320_240
 
 # Specify single output file
-./build_all.py --output /path/to/output.bin
+python build_all.py --output /path/to/output.bin
 
 # Combine both options
-./build_all.py --resolution 360_360 --output /path/to/custom.bin
+python build_all.py --resolution 360_360 --output /path/to/custom.bin
 ```
 
 ### build.py - Single Build Script
@@ -27,10 +27,17 @@ Build multiple SPIFFS assets partitions with different parameter combinations.
 Build a single SPIFFS assets partition.
 
 ```bash
-./build.py --text_font <text_font_file> \
-           --resolution <resolution_dir> \
-           --res_path <res_path_dir>
+python build.py --text_font <text_font_file> \
+                --resolution <resolution_dir> \
+                --res_path <res_path_dir> \
+                --name_length <name_length>
 ```
+
+**Parameters:**
+- `--text_font`: Path to text font file (required)
+- `--resolution`: Path to resolution directory (required)
+- `--res_path`: Path to res directory (required)
+- `--name_length`: Name length for assets (optional, default: "32")
 
 ### build_boot.py - Boot Animation Script
 
@@ -38,14 +45,19 @@ Build boot animation assets independently.
 
 ```bash
 # Build boot animation with default output path
-./build_boot.py --src boot_animation_360_360.eaf
+python build_boot.py --src anim_360_360
 
 # Build boot animation with custom output path
-./build_boot.py --src boot_animation_360_360.eaf --output ./final/boot_360_360.bin
+python build_boot.py --src anim_360_360 --output ./final/boot_360_360.bin
 
-# Build boot animation for 320x240
-./build_boot.py --src boot_animation_320_240.eaf
+# Build boot animation with custom name length
+python build_boot.py --src anim_360_360 --name_length 64
 ```
+
+**Parameters:**
+- `--src`: Boot animation file name (e.g., boot_animation_360_360.eaf) (required)
+- `--output`: Output file path for generated .bin file (optional, default: build/final/{src_filename}.bin)
+- `--name_length`: Name length for assets (optional, default: "32")
 
 ## Configuration
 
@@ -66,27 +78,40 @@ Each resolution directory contains a `config.json` file:
 esp_emote_assets/
 ├── 360_360/                 # 360x360 resolution config
 │   ├── config.json         # Resolution configuration
+│   ├── emote.json          # Emote configuration
 │   └── layout.json         # Layout configuration
 ├── 320_240/                 # 320x240 resolution config
+│   ├── config.json
+│   ├── emote.json
+│   └── layout.json
+├── 1024_600/                # 1024x600 resolution config
+│   ├── config.json
+│   ├── emote.json
+│   └── layout.json
 ├── emoji_large/             # Large emoji resources
 ├── emoji_small/             # Small emoji resources
+├── font/                    # Font files
+│   ├── font_puhui_common_14_1.bin
+│   ├── font_puhui_common_16_4.bin
+│   ├── font_puhui_common_20_4.bin
+│   └── font_puhui_common_30_4.bin
 ├── boot/                    # Boot animation files
-│   ├── boot_animation_360_360.eaf
-│   └── boot_animation_320_240.eaf
+│   └── anim_360_360.eaf
 └── scripts/
     └── spiffs_assets/
         ├── build.py        # Single build script
         ├── build_all.py    # Batch build script
-        └── build_boot.py   # Boot animation script
+        ├── build_boot.py   # Boot animation script
+        └── spiffs_assets_gen.py  # SPIFFS assets generator
 ```
 
 ## Path Configuration
 
 All paths are configured in the scripts, no environment variables needed.
 
-- **Fonts**: External dependency path
-- **Resources**: Local project paths using relative paths
-- **Configurations**: Local project paths using relative paths
+- **Fonts**: Local `font/` directory in project root
+- **Resources**: Local project paths (`emoji_large/`, `emoji_small/`)
+- **Configurations**: Local project paths (resolution directories)
 
 ## Output Files
 

@@ -166,7 +166,7 @@ def main():
         ensure_dir(final_dir)
     else:
         # Default: multiple files in build/final directory
-        final_dir = os.path.join(build_dir, "final")
+        final_dir = os.path.join(script_dir, "build", "final")
         output_filename = None
         ensure_dir(build_dir)
         ensure_dir(final_dir)

@@ -30,6 +30,10 @@ def ensure_dir(directory):
 def copy_file(src, dst):
     """Copy file"""
     if os.path.exists(src):
+        # Ensure destination directory exists
+        dst_dir = os.path.dirname(dst)
+        if dst_dir:
+            ensure_dir(dst_dir)
         shutil.copy2(src, dst)
         # print(f"Copied: {src} -> {dst}")
     else:
@@ -230,25 +234,14 @@ def generate_index_json(assets_dir, text_font, emoji_collection, icon_collection
     print(f"Generated: {index_path}")
 
 
-def generate_config_json(build_dir, assets_dir):
+def generate_config_json(build_dir, assets_dir, name_length="32"):
     """Generate config.json file"""
     
     config_data = {
-        "include_path": os.path.join(build_dir, "include"),
         "assets_path": os.path.join(build_dir, "assets"),
         "image_file": os.path.join(build_dir, "output/assets.bin"),
-        "lvgl_ver": "9.3.0",
-        "assets_size": "0x400000",
         "support_format": ".png, .gif, .jpg, .bin, .json, .eaf",
-        "name_length": "32",
-        "split_height": "0",
-        "support_qoi": False,
-        "support_spng": False,
-        "support_sjpg": False,
-        "support_sqoi": False,
-        "support_raw": False,
-        "support_raw_dither": False,
-        "support_raw_bgr": False
+        "name_length": name_length,
     }
     
     # Write config.json
@@ -265,6 +258,7 @@ def main():
     parser.add_argument('--text_font', help='Path to text font file')
     parser.add_argument('--res_path', help='Path to res directory')
     parser.add_argument('--resolution', help='Path to resolution directory')
+    parser.add_argument('--name_length', default="32", help='Name length for assets (default: 32)')
     
     args = parser.parse_args()
     
@@ -275,7 +269,9 @@ def main():
     build_dir = os.path.join(script_dir, "build/face")
     assets_dir = os.path.join(build_dir, "assets")
     if os.path.exists(assets_dir):
-        shutil.rmtree(assets_dir)
+        # Use ignore_errors to handle race conditions where files may be deleted
+        # during the removal process
+        shutil.rmtree(assets_dir, ignore_errors=True)
     
     # Ensure directories exist
     ensure_dir(build_dir)
@@ -297,7 +293,7 @@ def main():
     generate_index_json(assets_dir, text_font, emoji_collection, icon_collection, layout_json)
     
     # Generate config.json
-    config_path = generate_config_json(build_dir, assets_dir)
+    config_path = generate_config_json(build_dir, assets_dir, args.name_length)
     
     # Use spiffs_assets_gen.py to package final build/assets.bin
     try:
