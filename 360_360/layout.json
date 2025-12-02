@@ -102,5 +102,15 @@
       "period": 1000,
       "repeat_count": -1
     }
+  },
+  {
+    "type": "qrcode",
+    "name": "qrcode",
+    "align": "GFX_ALIGN_CENTER",
+    "x": 0,
+    "y": 30,
+    "qrcode": {
+      "size": 150
+    }
   }
 ]

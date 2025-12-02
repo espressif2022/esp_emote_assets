@@ -63,9 +63,9 @@
       "color": 16777215,
       "text_align": "GFX_TEXT_ALIGN_CENTER",
       "long_mode": {
-        "type": "GFX_LABEL_LONG_SNAP",
+        "type": "GFX_LABEL_LONG_SCROLL",
         "loop": true,
-        "snap_interval": 1500
+        "speed": 10
       }
     }
   },
