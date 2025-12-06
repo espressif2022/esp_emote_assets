@@ -70,6 +70,10 @@ cd scripts/spiffs_assets
 # Build boot animation
 ./build_boot.py --src anim_360_360.eaf
 
+# Build with external path (searches external path first, then falls back to local)
+./build_all.py --resolution 360_360 --external_path /path/to/external/assets
+./build_boot.py --src anim_360_360.eaf --external_path /path/to/external/assets
+
 ```
 
 ## Configuration
@@ -94,7 +98,49 @@ The build script supports automatic file discovery with extensions: `.eaf`.
 
 ## Path Configuration
 
-All paths are configured in the scripts, no environment variables needed.
+### Default Local Paths
+
+By default, all resources are searched in the component's local directories:
+- Resolution configs: `{component_root}/{resolution_name}/` (e.g., `360_360/`, `320_240/`)
+- Emoji collections: `{component_root}/{emoji_collection}/` (e.g., `emoji_large/`, `emoji_small/`)
+- Font files: `{component_root}/font/`
+- Boot animations: `{component_root}/boot/`
+
+### External Path Support
+
+You can specify an external base path prefix using the `--external_path` option. The build scripts will:
+1. **First** search in the external path for resources
+2. **Fallback** to local paths if not found in external path
+
+This allows you to:
+- Use custom assets from external directories
+- Override specific resources while keeping others local
+- Share assets across multiple projects
+
+**Example:**
+```bash
+# External path structure:
+/path/to/external/
+├── 360_360/
+│   ├── config.json
+│   └── layout.json
+├── emoji_large/
+│   └── ...
+├── font/
+│   └── ...
+└── boot/
+    └── anim_360_360.eaf
+
+# Build using external path
+./build_all.py --resolution 360_360 --external_path /path/to/external
+```
+
+**CMake Usage:**
+```cmake
+# Pass external path as 5th argument
+build_speaker_assets_bin("assets" "360_360" "${ASSETS_FILE}" "${NAME_LENGTH}" "/path/to/external")
+build_boot_assets_bin("boot" "anim_360_360.eaf" "${BOOT_FILE}" "${NAME_LENGTH}" "/path/to/external")
+```
 
 ## Output Files
 
