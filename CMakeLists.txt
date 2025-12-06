@@ -68,6 +68,11 @@ function(build_speaker_assets_bin partition_name resolution output_path)
     if(ARGC GREATER 3)
         list(APPEND BUILD_ARGS "--name_length" "${ARGV3}")
     endif()
+    
+    # Check if external_path is provided (5th argument)
+    if(ARGC GREATER 4)
+        list(APPEND BUILD_ARGS "--external_path" "${ARGV4}")
+    endif()
 
     # Create custom command to build assets
     add_custom_command(
@@ -117,6 +122,11 @@ function(build_boot_assets_bin partition_name boot_src output_path)
     # Check if name_length is provided (4th argument)
     if(ARGC GREATER 3 AND NOT "${ARGV3}" STREQUAL "")
         list(APPEND BUILD_ARGS "--name_length" "${ARGV3}")
+    endif()
+    
+    # Check if external_path is provided (5th argument)
+    if(ARGC GREATER 4)
+        list(APPEND BUILD_ARGS "--external_path" "${ARGV4}")
     endif()
 
     # Create custom command to build assets

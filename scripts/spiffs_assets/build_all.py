@@ -47,10 +47,11 @@ class Colors:
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 
-# Base paths - all local paths
+# Base paths - can be overridden by external path
 FONTS_BASE_PATH = PROJECT_ROOT
 EMOTE_GFX_BASE_PATH = PROJECT_ROOT
 BOARDS_BASE_PATH = PROJECT_ROOT
+EXTERNAL_BASE_PATH = None  # External path prefix (default: None, use local)
 
 def ensure_dir(directory):
     """Ensure directory exists, create if not"""
@@ -64,23 +65,59 @@ def get_file_path(base_dir, filename):
     return os.path.join(base_dir, f"{filename}.bin" if not filename.startswith("emojis_") else filename)
 
 
-def build_assets(text_font, resolution_name, emoji_collection, build_dir, final_dir, output_filename=None, name_length=None):
+def find_path_in_bases(*path_parts, external_base=None, local_base=None):
+    """
+    Find path in external base first, then fallback to local base.
+    
+    Args:
+        *path_parts: Path components to join
+        external_base: External base path (optional)
+        local_base: Local base path (default: PROJECT_ROOT)
+    
+    Returns:
+        Full path if found, None otherwise
+    """
+    if local_base is None:
+        local_base = PROJECT_ROOT
+    
+    # Try external path first if provided
+    if external_base:
+        external_path = os.path.join(external_base, *path_parts)
+        if os.path.exists(external_path):
+            return external_path
+    
+    # Fallback to local path
+    local_path = os.path.join(local_base, *path_parts)
+    if os.path.exists(local_path):
+        return local_path
+    
+    # Return local path even if it doesn't exist (for creation)
+    return local_path
+
+
+def build_assets(text_font, resolution_name, emoji_collection, build_dir, final_dir, output_filename=None, name_length=None, external_base=None):
     """Build assets.bin using build.py with given parameters"""
     
     # Prepare arguments for build.py
     cmd = [sys.executable, "build.py"]
     
     if text_font != "none":
-        text_font_path = os.path.join(FONTS_BASE_PATH, 'font/', f"{text_font}.bin")
+        # Try external path first, then local
+        text_font_path = find_path_in_bases('font', f"{text_font}.bin", 
+                                           external_base=external_base, 
+                                           local_base=FONTS_BASE_PATH)
         cmd.extend(["--text_font", text_font_path])
 
-    # print(f"resolution: {resolution_name}")
-    
-    res_path = os.path.join(EMOTE_GFX_BASE_PATH, emoji_collection)
-    # print(f"res_path: {res_path}")
+    # Find emoji collection path (try external first, then local)
+    res_path = find_path_in_bases(emoji_collection,
+                                  external_base=external_base,
+                                  local_base=EMOTE_GFX_BASE_PATH)
     cmd.extend(["--res_path", res_path])
 
-    resolution_path = os.path.join(BOARDS_BASE_PATH, resolution_name)
+    # Find resolution path (try external first, then local)
+    resolution_path = find_path_in_bases(resolution_name,
+                                        external_base=external_base,
+                                        local_base=BOARDS_BASE_PATH)
     cmd.extend(["--resolution", resolution_path])
     
     if name_length:
@@ -122,9 +159,11 @@ def build_assets(text_font, resolution_name, emoji_collection, build_dir, final_
         return False
 
 
-def load_resolution_config(resolution_name):
-    """Load configuration from resolution directory"""
-    config_path = os.path.join(BOARDS_BASE_PATH, resolution_name, "config.json")
+def load_resolution_config(resolution_name, external_base=None):
+    """Load configuration from resolution directory (try external first, then local)"""
+    config_path = find_path_in_bases(resolution_name, "config.json",
+                                     external_base=external_base,
+                                     local_base=BOARDS_BASE_PATH)
     
     if not os.path.exists(config_path):
         print(f"Warning: Config file not found: {config_path}")
@@ -149,13 +188,24 @@ def main():
     parser.add_argument('--resolution', nargs='+', help='List of resolution directories to build (e.g., 360_360 320_240)')
     parser.add_argument('--output', help='Output file path for generated .bin file (default: build/final/{resolution}_{font}_{emoji}.bin)')
     parser.add_argument('--name_length', help='Name length for assets (optional, default: "32")')
+    parser.add_argument('--external_path', help='External base path prefix for finding resources (default: use local paths only). Searches external path first, then falls back to local.')
     args = parser.parse_args()
+    
+    # Get external base path if provided
+    external_base = None
+    if args.external_path:
+        external_base = os.path.abspath(args.external_path)
+        if not os.path.isdir(external_base):
+            print(f"{Colors.RED}Warning: External path does not exist: {external_base}{Colors.ENDC}")
+            print(f"{Colors.YELLOW}Will use local paths only.{Colors.ENDC}")
+            external_base = None
     
     # Print parsed arguments
     print(f"{Colors.GREEN}Build Configuration:{Colors.ENDC}")
     print(f"  Resolution: {args.resolution if args.resolution else 'default (360_360, 320_240, 1024_600)'}")
     print(f"  Output: {args.output if args.output else 'default (build/final/{{resolution}}_{{font}}_{{emoji}}.bin)'}")
     print(f"  Name Length: {args.name_length if args.name_length else '32'}")
+    print(f"  External Path: {external_base if external_base else 'None (using local paths only)'}")
     
     # Use command line resolutions or default
     resolutions = args.resolution if args.resolution else [
@@ -190,8 +240,8 @@ def main():
     
     # Build all combinations with resolutions
     for resolution_name in resolutions:
-        # Load configuration for this resolution
-        text_font, emoji_collection = load_resolution_config(resolution_name)
+        # Load configuration for this resolution (try external first, then local)
+        text_font, emoji_collection = load_resolution_config(resolution_name, external_base=external_base)
         
         if text_font is None or emoji_collection is None:
             print(f"Skipping resolution {resolution_name} due to config error")
@@ -199,7 +249,7 @@ def main():
         
         total_combinations += 1
         
-        if build_assets(text_font, resolution_name, emoji_collection, build_dir, final_dir, output_filename, args.name_length):
+        if build_assets(text_font, resolution_name, emoji_collection, build_dir, final_dir, output_filename, args.name_length, external_base=external_base):
             successful_builds += 1
     
     print(f"{Colors.GREEN}Completed! Builds: {successful_builds}/{total_combinations}{Colors.ENDC}")

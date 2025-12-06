@@ -34,16 +34,30 @@ class Colors:
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 
-# Base paths
+# Base paths - can be overridden by external path
 BOOT_BASE_PATH = PROJECT_ROOT
 EMOTE_GFX_BASE_PATH = PROJECT_ROOT
+EXTERNAL_BASE_PATH = None  # External path prefix (default: None, use local)
 
 def ensure_dir(directory):
     """Ensure directory exists, create if not"""
     os.makedirs(directory, exist_ok=True)
 
-def find_boot_file(boot_name):
-    """Find boot animation file in boot directory"""
+def find_boot_file(boot_name, external_base=None):
+    """
+    Find boot animation file in boot directory.
+    Tries external path first, then falls back to local path.
+    """
+    # Try external path first if provided
+    if external_base:
+        external_boot_dir = os.path.join(external_base, 'boot')
+        extensions = ['.eaf', '.bin', '']
+        for ext in extensions:
+            boot_path = os.path.join(external_boot_dir, f"{boot_name}{ext}")
+            if os.path.exists(boot_path):
+                return boot_path
+    
+    # Fallback to local path
     boot_dir = os.path.join(BOOT_BASE_PATH, 'boot')
     
     # Try different extensions
@@ -57,11 +71,11 @@ def find_boot_file(boot_name):
     # If not found, return the path with .eaf extension for error reporting
     return os.path.join(boot_dir, f"{boot_name}.eaf")
 
-def build_boot_assets(boot_file, output_file, name_length="32"):
+def build_boot_assets(boot_file, output_file, name_length="32", external_base=None):
     """Build boot assets independently - just copy and package"""
     
-    # Find the actual boot file
-    boot_path = find_boot_file(boot_file)
+    # Find the actual boot file (try external first, then local)
+    boot_path = find_boot_file(boot_file, external_base=external_base)
     
     if not os.path.exists(boot_path):
         print(f"{Colors.RED}✗ Boot file not found: {boot_path}{Colors.ENDC}")
@@ -128,7 +142,17 @@ def main():
     parser.add_argument('--src', required=True, help='Boot animation file name (e.g., boot_animation_360_360.eaf)')
     parser.add_argument('--output', help='Output file path for generated .bin file (default: build/final/{src_filename}.bin)')
     parser.add_argument('--name_length', default="32", help='Name length for assets (default: 32)')
+    parser.add_argument('--external_path', help='External base path prefix for finding boot files (default: use local paths only). Searches external path first, then falls back to local.')
     args = parser.parse_args()
+    
+    # Get external base path if provided
+    external_base = None
+    if args.external_path:
+        external_base = os.path.abspath(args.external_path)
+        if not os.path.isdir(external_base):
+            print(f"{Colors.RED}Warning: External path does not exist: {external_base}{Colors.ENDC}")
+            print(f"{Colors.YELLOW}Will use local paths only.{Colors.ENDC}")
+            external_base = None
     
     # Set default output path if not provided
     if not args.output:
@@ -146,9 +170,10 @@ def main():
     print(f"  Source: {args.src}")
     print(f"  Output: {args.output}")
     print(f"  Name Length: {args.name_length}")
+    print(f"  External Path: {external_base if external_base else 'None (using local paths only)'}")
     
     # Build boot assets
-    if build_boot_assets(args.src, args.output, args.name_length):
+    if build_boot_assets(args.src, args.output, args.name_length, external_base=external_base):
         print(f"{Colors.GREEN}Completed!{Colors.ENDC}")
     else:
         print(f"{Colors.RED}Build failed!{Colors.ENDC}")
