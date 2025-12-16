@@ -16,8 +16,6 @@ from dataclasses import dataclass
 from typing import List
 from datetime import datetime
 
-from PIL import Image
-
 GREEN = "\033[1;32m"
 RED = "\033[1;31m"
 RESET = "\033[0m"
@@ -70,13 +68,8 @@ def pack_assets(config: PackModelsConfig) -> None:
         file_name = os.path.basename(file_path)
         file_size = os.path.getsize(file_path)
 
-        # Try to read width/height from image if possible
-        try:
-            img = Image.open(file_path)
-            width, height = img.size
-        except Exception:
-            # Fallback: if not an image, store 0,0 as size
-            width, height = 0, 0
+        # Image processing removed, set width/height to 0
+        width, height = 0, 0
 
         file_info_list.append((file_name, len(merged_data), file_size, width, height))
 
