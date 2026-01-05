@@ -55,7 +55,7 @@ function(validate_partition_size partition_name output_file)
 endfunction()
 
 # Function to build default assets based on configuration
-# Usage: build_speaker_assets_bin(partition_name resolution output_path [name_length])
+# Usage: build_speaker_assets_bin(partition_name resolution output_path [name_length] [external_path])
 function(build_speaker_assets_bin partition_name resolution output_path)
     get_component_path("esp_emote_assets" component_path)
     

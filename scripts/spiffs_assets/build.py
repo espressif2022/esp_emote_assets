@@ -58,8 +58,23 @@ def process_text_font(text_font_file, assets_dir):
     font_filename = os.path.basename(text_font_file)
     font_dst = os.path.join(assets_dir, font_filename)
     copy_file(text_font_file, font_dst)
+    print(f"Handle text font: {font_filename}")
     
     return font_filename
+
+
+def process_wakenet_model(wakenet_model_file, assets_dir):
+    """Process wakenet_model parameter"""
+    if not wakenet_model_file:
+        return None
+
+    # Copy input file to build/assets directory
+    wakenet_filename = os.path.basename(wakenet_model_file)
+    wakenet_dst = os.path.join(assets_dir, wakenet_filename)
+    copy_file(wakenet_model_file, wakenet_dst)
+    print(f"Handle wakenet model: {wakenet_filename}")
+
+    return wakenet_filename
 
 
 def load_emoji_config(emoji_collection_dir):
@@ -135,7 +150,6 @@ def process_board_emoji_collection(emoji_collection_dir, resolution_dir, assets_
         
         emoji_list.append(emoji_entry)
     
-    print(f"Processed emotes: {len(emoji_list)} items")
     return emoji_list
 
 def process_board_icon_collection(icon_collection_dir, assets_dir):
@@ -208,11 +222,15 @@ def process_board_collection(resolution_dir, res_path, assets_dir):
     
     return emoji_collection, icon_collection, layout_json
 
-def generate_index_json(assets_dir, text_font, emoji_collection, icon_collection, layout_json):
+def generate_index_json(assets_dir, text_font, emoji_collection, icon_collection, layout_json, wakenet_model=None):
     """Generate index.json file"""
     index_data = {
         "version": 1
     }
+
+    if wakenet_model:
+        model_name = os.path.splitext(wakenet_model)[0]
+        index_data[model_name] = wakenet_model
     
     if text_font:
         index_data["text_font"] = text_font
@@ -233,6 +251,7 @@ def generate_index_json(assets_dir, text_font, emoji_collection, icon_collection
         json.dump(index_data, f, indent=4, ensure_ascii=False)
     
     #print(f"Generated: {index_path}")
+    # print(f"Generated index.json: {index_data}")
 
 
 def generate_config_json(build_dir, assets_dir, name_length="32"):
@@ -260,6 +279,7 @@ def main():
     parser.add_argument('--res_path', help='Path to res directory')
     parser.add_argument('--resolution', help='Path to resolution directory')
     parser.add_argument('--name_length', default="32", help='Name length for assets (default: 32)')
+    parser.add_argument('--wakenet_model', help='Path to wakenet model file')
     
     args = parser.parse_args()
     
@@ -280,6 +300,7 @@ def main():
     
     # Process each parameter
     text_font = process_text_font(args.text_font, assets_dir)
+    wakenet_model = process_wakenet_model(args.wakenet_model, assets_dir)
 
     if(args.resolution):
         emoji_collection, icon_collection, layout_json = process_board_collection(args.resolution, args.res_path, assets_dir)
@@ -289,7 +310,7 @@ def main():
         layout_json = []
     
     # Generate index.json
-    generate_index_json(assets_dir, text_font, emoji_collection, icon_collection, layout_json)
+    generate_index_json(assets_dir, text_font, emoji_collection, icon_collection, layout_json, wakenet_model)
     
     # Generate config.json
     config_path = generate_config_json(build_dir, assets_dir, args.name_length)
