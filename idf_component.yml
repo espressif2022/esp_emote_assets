@@ -1,4 +1,4 @@
-version: "0.0.3~4"
+version: "0.1.0"
 license: "Apache-2.0"
 description: ESP Emote Assets - Asset management component for ESP-IDF, providing SPIFFS assets generation and management tools.
 url: https://github.com/espressif2022/esp_emote_assets

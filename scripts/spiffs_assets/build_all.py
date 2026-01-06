@@ -95,7 +95,7 @@ def find_path_in_bases(*path_parts, external_base=None, local_base=None):
     return local_path
 
 
-def build_assets(text_font, resolution_name, emoji_collection, build_dir, final_dir, output_filename=None, name_length=None, external_base=None):
+def build_assets(text_font, resolution_name, emoji_collection, wakenet_model=None, build_dir=None, final_dir=None, output_filename=None, name_length=None, external_base=None):
     """Build assets.bin using build.py with given parameters"""
     
     # Prepare arguments for build.py
@@ -120,11 +120,22 @@ def build_assets(text_font, resolution_name, emoji_collection, build_dir, final_
                                         local_base=BOARDS_BASE_PATH)
     cmd.extend(["--resolution", resolution_path])
     
+    # Find wakenet model path if specified
+    if wakenet_model != "none":
+        # Try to find wakenet model in wakenet directory
+        wakenet_path = find_path_in_bases('wakenet', wakenet_model,
+                                         external_base=external_base,
+                                         local_base=PROJECT_ROOT)
+        if wakenet_path and os.path.exists(wakenet_path):
+            cmd.extend(["--wakenet_model", wakenet_path])
+        else:
+            print(f"{Colors.YELLOW}Warning: Wakenet model not found: {wakenet_model} (searched: {wakenet_path}){Colors.ENDC}")
+
     if name_length:
         cmd.extend(["--name_length", name_length])
     
     # Prepare display info
-    display_info = f"{resolution_name}_{text_font}_{emoji_collection}"
+    display_info = f"{resolution_name}_{text_font}_{emoji_collection}_{wakenet_model}"
     print(f"{Colors.GREEN}Building: {display_info}{Colors.ENDC}")
     # print(f"Command: {' '.join(cmd)}")
     
@@ -136,7 +147,7 @@ def build_assets(text_font, resolution_name, emoji_collection, build_dir, final_
         if output_filename:
             output_name = output_filename
         else:
-            output_name = f"{resolution_name}_{text_font}_{emoji_collection}.bin"
+            output_name = f"{resolution_name}.bin"
         
         # Copy generated assets.bin to final directory with new name
         src_path = os.path.join(build_dir, "output", "assets.bin")
@@ -167,7 +178,7 @@ def load_resolution_config(resolution_name, external_base=None):
     
     if not os.path.exists(config_path):
         print(f"Warning: Config file not found: {config_path}")
-        return None, None
+        return None, None, None
     
     try:
         with open(config_path, 'r', encoding='utf-8') as f:
@@ -175,11 +186,12 @@ def load_resolution_config(resolution_name, external_base=None):
         
         text_font = config.get('text_font', 'none')
         emoji_collection = config.get('emoji_collection', 'emoji_large')
+        wakenet_model = config.get('wakenet_model', 'none')
         
-        return text_font, emoji_collection
+        return text_font, emoji_collection, wakenet_model
     except Exception as e:
         print(f"Error loading config file {config_path}: {e}")
-        return None, None
+        return None, None, None
 
 
 def main():
@@ -203,7 +215,7 @@ def main():
     # Print parsed arguments
     print(f"{Colors.GREEN}Build Configuration:{Colors.ENDC}")
     print(f"  Resolution: {args.resolution if args.resolution else 'default (360_360, 320_240, 1024_600)'}")
-    print(f"  Output: {args.output if args.output else 'default (build/final/{{resolution}}_{{font}}_{{emoji}}.bin)'}")
+    print(f"  Output: {args.output if args.output else 'default (build/final/{{resolution}}.bin)'}")
     print(f"  Name Length: {args.name_length if args.name_length else '32'}")
     print(f"  External Path: {external_base if external_base else 'None (using local paths only)'}")
     
@@ -241,7 +253,7 @@ def main():
     # Build all combinations with resolutions
     for resolution_name in resolutions:
         # Load configuration for this resolution (try external first, then local)
-        text_font, emoji_collection = load_resolution_config(resolution_name, external_base=external_base)
+        text_font, emoji_collection, wakenet_model = load_resolution_config(resolution_name, external_base=external_base)
         
         if text_font is None or emoji_collection is None:
             print(f"Skipping resolution {resolution_name} due to config error")
@@ -249,7 +261,7 @@ def main():
         
         total_combinations += 1
         
-        if build_assets(text_font, resolution_name, emoji_collection, build_dir, final_dir, output_filename, args.name_length, external_base=external_base):
+        if build_assets(text_font, resolution_name, emoji_collection, wakenet_model, build_dir, final_dir, output_filename, args.name_length, external_base):
             successful_builds += 1
     
     print(f"{Colors.GREEN}Completed! Builds: {successful_builds}/{total_combinations}{Colors.ENDC}")
