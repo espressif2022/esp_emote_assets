@@ -2,6 +2,9 @@
 
 All notable changes to the ESP Emote GFX component will be documented in this file.
 
+## [0.1.1] - 2026-01-15
+- Add window support
+
 ## [0.1.0] - 2026-01-05
 - Add support for wake word models (wakenet_model) in config.json
 - Delete build_boot.py
