@@ -2,6 +2,9 @@
 
 All notable changes to the ESP Emote GFX component will be documented in this file.
 
+## [0.1.2] - 2026-02-12
+- Add Qrode for 1024*600
+
 ## [0.1.1] - 2026-01-15
 - Add window support
 
